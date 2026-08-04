@@ -1,0 +1,24 @@
+# Main reverse proxy for the whole server. Cloudflare (Full / Full strict
+# mode) terminates TLS for visitors and re-encrypts to this origin, so this
+# nginx terminates that second TLS hop using a Cloudflare Origin CA
+# certificate (see README.md — no Let's Encrypt/certbot needed), then
+# forwards to the crossword / splitbot app stacks over the shared external
+# "edge" network.
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: edge-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - edge
+
+networks:
+  edge:
+    external: true
