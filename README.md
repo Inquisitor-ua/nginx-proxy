@@ -4,12 +4,19 @@ The single public entry point for the server. Routes:
 
 - `crossword.yehor-inq.com` → `crossword-nginx` (Django/gunicorn, via the crossword project's own nginx container)
 - `splitbot.yehor-inq.com` → `splitbot-app` (FastAPI/uvicorn web-auth service)
+- `yehor-inq.com` / `www.yehor-inq.com` → `portfolio-web` (Django/Wagtail via gunicorn); `/media/` is served
+  directly from `../portfolio/media`, mounted read-only into this container (see `conf.d/portfolio.conf`)
 
-Both are reached over a shared external Docker network called `edge` — this
-proxy never talks to app containers over the host network, and the app
-stacks don't publish any ports to the host themselves.
+All three are reached over a shared external Docker network called `edge`
+— this proxy never talks to app containers over the host network, and the
+app stacks don't publish any ports to the host themselves.
 
-DNS for both subdomains is proxied through Cloudflare (orange cloud), with
+This repo is expected to sit next to the app repos on the server (e.g.
+`/srv/nginx-proxy`, `/srv/crossword`, `/srv/splitbot`, `/srv/portfolio`),
+since `docker-compose.yml` here mounts `../portfolio/media` by relative
+path and the README commands below `cd` between sibling directories.
+
+DNS for all three domains is proxied through Cloudflare (orange cloud), with
 SSL/TLS mode **Full / Full strict**. That means Cloudflare terminates TLS
 for visitors, then re-encrypts and connects to this server on port 443 —
 so this nginx needs its own certificate for that second hop. Since
@@ -56,8 +63,9 @@ actual app traffic (port 80 is just an HTTPS redirect safety net).
 
 ```bash
 # 1. app stacks first, so the proxy has something to reach
-cd ../crossword && docker compose up -d --build
-cd ../splitbot  && docker compose up -d --build
+cd ../crossword  && docker compose up -d --build
+cd ../splitbot   && docker compose up -d --build
+cd ../portfolio  && docker compose up -d --build
 
 # 2. then the proxy
 cd ../nginx-proxy && docker compose up -d
@@ -69,6 +77,7 @@ cd ../nginx-proxy && docker compose up -d
 docker compose logs -f nginx
 curl -H "Host: crossword.yehor-inq.com" http://127.0.0.1
 curl -H "Host: splitbot.yehor-inq.com" http://127.0.0.1
+curl -H "Host: yehor-inq.com" http://127.0.0.1
 ```
 
 Then check both sites through the real domains (with Cloudflare proxying).
@@ -83,11 +92,11 @@ bypassing Cloudflare (and its WAF/rate limiting). On the host firewall
 already restores the real visitor IP from `CF-Connecting-IP` for logs/`X-Forwarded-For`,
 regardless of whether you add the firewall rule.
 
-## Adding a third app later
+## Adding another app later
 
 1. Give it its own `docker-compose.yml` with no host port publish, joined to
    the external `edge` network, `container_name` set to something DNS-safe.
 2. Drop a new `conf.d/<name>.conf` here following the pattern in
-   `crossword.conf` / `splitbot.conf`, pointing `proxy_pass` at that
-   container name.
+   `crossword.conf` / `splitbot.conf` / `portfolio.conf`, pointing
+   `proxy_pass` at that container name.
 3. `docker compose restart nginx` (or `nginx -s reload` inside the container).

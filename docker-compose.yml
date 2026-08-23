@@ -2,8 +2,8 @@
 # mode) terminates TLS for visitors and re-encrypts to this origin, so this
 # nginx terminates that second TLS hop using a Cloudflare Origin CA
 # certificate (see README.md — no Let's Encrypt/certbot needed), then
-# forwards to the crossword / splitbot app stacks over the shared external
-# "edge" network.
+# forwards to the crossword / splitbot / portfolio app stacks over the
+# shared external "edge" network.
 
 services:
   nginx:
@@ -16,6 +16,7 @@ services:
     volumes:
       - ./conf.d:/etc/nginx/conf.d:ro
       - ./certs:/etc/nginx/certs:ro
+      - ../portfolio/media:/etc/nginx/media/portfolio:ro
     networks:
       - edge
 
