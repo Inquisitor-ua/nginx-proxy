@@ -17,7 +17,7 @@ services:
       - ./conf.d:/etc/nginx/conf.d:ro
       - ./certs:/etc/nginx/certs:ro
       - ../portfolio/media:/etc/nginx/media/portfolio:ro
-      - ../easyschool/easyschool/media:/etc/nginx/media/easyschool:ro
+      - ../easyschool/media:/etc/nginx/media/easyschool:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
