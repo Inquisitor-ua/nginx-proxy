@@ -6,6 +6,7 @@ The single public entry point for the server. Routes:
 - `splitbot.yehor-inq.com` → `splitbot-app` (FastAPI/uvicorn web-auth service)
 - `yehor-inq.com` / `www.yehor-inq.com` → `portfolio-web` (Django/Wagtail via gunicorn); `/media/` is served
   directly from `../portfolio/media`, mounted read-only into this container (see `conf.d/portfolio.conf`)
+- `bridge.yehor-inq.com` → `bridge-app` (FastAPI/uvicorn: built Vue frontend + `/ws` WebSocket, see `conf.d/bridge.conf`)
 
 All three are reached over a shared external Docker network called `edge`
 — this proxy never talks to app containers over the host network, and the
@@ -66,6 +67,7 @@ actual app traffic (port 80 is just an HTTPS redirect safety net).
 cd ../crossword  && docker compose up -d --build
 cd ../splitbot   && docker compose up -d --build
 cd ../portfolio  && docker compose up -d --build
+cd ../bridge     && docker compose up -d --build
 
 # 2. then the proxy
 cd ../nginx-proxy && docker compose up -d
@@ -78,6 +80,7 @@ docker compose logs -f nginx
 curl -H "Host: crossword.yehor-inq.com" http://127.0.0.1
 curl -H "Host: splitbot.yehor-inq.com" http://127.0.0.1
 curl -H "Host: yehor-inq.com" http://127.0.0.1
+curl -H "Host: bridge.yehor-inq.com" http://127.0.0.1
 ```
 
 Then check both sites through the real domains (with Cloudflare proxying).
