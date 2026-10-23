@@ -18,6 +18,8 @@ services:
       - ./certs:/etc/nginx/certs:ro
       - ../portfolio/media:/etc/nginx/media/portfolio:ro
       - ../easyschool/media:/etc/nginx/media/easyschool:ro
+      - ../popsnapkins/media:/etc/nginx/media/popsnapkins:ro
+      - ../popsnapkins/staticfiles:/etc/nginx/static/popsnapkins:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

@@ -7,6 +7,9 @@ The single public entry point for the server. Routes:
 - `yehor-inq.com` / `www.yehor-inq.com` → `portfolio-web` (Django/Wagtail via gunicorn); `/media/` is served
   directly from `../portfolio/media`, mounted read-only into this container (see `conf.d/portfolio.conf`)
 - `bridge.yehor-inq.com` → `bridge-app` (FastAPI/uvicorn: built Vue frontend + `/ws` WebSocket, see `conf.d/bridge.conf`)
+- `popsnapkins.yehor-inq.com` → gunicorn on the host at `host.docker.internal:8004` (Django shop); `/static/` and
+  `/media/` are served directly from `../popsnapkins/staticfiles` and `../popsnapkins/media`, mounted read-only
+  (see `conf.d/popsnapkins.conf`)
 
 All three are reached over a shared external Docker network called `edge`
 — this proxy never talks to app containers over the host network, and the
@@ -81,6 +84,7 @@ curl -H "Host: crossword.yehor-inq.com" http://127.0.0.1
 curl -H "Host: splitbot.yehor-inq.com" http://127.0.0.1
 curl -H "Host: yehor-inq.com" http://127.0.0.1
 curl -H "Host: bridge.yehor-inq.com" http://127.0.0.1
+curl -H "Host: popsnapkins.yehor-inq.com" http://127.0.0.1
 ```
 
 Then check both sites through the real domains (with Cloudflare proxying).
